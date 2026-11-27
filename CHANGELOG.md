@@ -7,7 +7,7 @@
 - 文案：角色名统一为 **Gemini娘**，移除「观察窗 / 观察台」措辞
 - README 安装改为按来源分节：npm / GitHub（源码与 Release 包）/ 插件市场 / 桌面端 / 本地开发
 
-- 新增：市场卡片图标 `assets/icon.png`（256×256 PNG，白底）
+- 新增：市场卡片图标 `assets/icon.png`（256×256 PNG，透明底）
 - 新增：`docs/` 界面截图与可复现的预览页 `docs/demo.html`
 - 新增：上架材料清单 `docs/MARKET.md` 与条目草稿 `docs/market-entry.yml`
 - 新增：`scripts/check.mjs` 校验 `icon` 存在且为位图、`docs` 不进发布包
