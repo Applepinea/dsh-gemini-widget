@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>DSH Gemini Widget · 预览</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font: 14px/1.6 "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    color: #e7e4f2;
+    background:
+      radial-gradient(1100px 500px at 78% -8%, rgba(124,92,255,.20), transparent 62%),
+      radial-gradient(900px 520px at 10% 108%, rgba(64,140,255,.14), transparent 62%),
+      #16141f;
+    overflow: hidden;
+  }
+  .shell { display: flex; height: 100%; }
+
+  /* 左侧栏：模拟 DSH 侧栏，给截图一点环境感 */
+  .side {
+    width: 232px; flex: 0 0 auto; padding: 18px 14px;
+    border-right: 1px solid rgba(255,255,255,.07);
+    background: rgba(255,255,255,.022);
+  }
+  .brand { display: flex; align-items: center; gap: 9px; margin-bottom: 22px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #7c5cff; box-shadow: 0 0 12px #7c5cff; }
+  .brand b { font-size: 13px; letter-spacing: .2px; }
+  .nav { display: flex; flex-direction: column; gap: 3px; }
+  .nav div { padding: 7px 10px; border-radius: 8px; font-size: 12.5px; color: #a8a2c0; }
+  .nav div.on { background: rgba(124,92,255,.16); color: #d8d0ff; }
+
+  /* 主区：模拟对话 */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .top {
+    height: 46px; flex: 0 0 auto; display: flex; align-items: center; gap: 10px;
+    padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,.07);
+    font-size: 12.5px; color: #a8a2c0;
+  }
+  .chat { flex: 1; overflow: hidden; padding: 22px 26px; display: flex; flex-direction: column; gap: 16px; }
+  .msg { max-width: 620px; }
+  .msg .who { font-size: 11px; letter-spacing: .4px; text-transform: uppercase; color: #7d7695; margin-bottom: 5px; }
+  .bubble2 {
+    background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 12px; padding: 10px 14px; font-size: 13px; color: #cfc9e2;
+  }
+  .msg.user .bubble2 { background: rgba(124,92,255,.13); border-color: rgba(124,92,255,.22); }
+
+  /* 输入区 —— 统计栏会挂到 [data-testid="agent-input-box"] 后面 */
+  .composer { flex: 0 0 auto; padding: 12px 26px 22px; }
+  .inputbox {
+    display: flex; align-items: center; gap: 10px;
+    border: 1px solid rgba(255,255,255,.10); border-radius: 13px;
+    background: rgba(255,255,255,.035); padding: 12px 14px; font-size: 13px; color: #8b85a3;
+  }
+  .inputbox .send {
+    margin-left: auto; width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(124,92,255,.5); display: grid; place-items: center; color: #fff; font-size: 12px;
+  }
+
+  /* 让挂件元素在截图里更清楚 */
+  #neko-root { z-index: 40 !important; }
+  #neko-stats { font-size: 11px !important; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand"><span class="dot"></span><b>DeepSeek Harness</b></div>
+    <nav class="nav">
+      <div class="on">新建对话</div>
+      <div>重构会话存储</div>
+      <div>插件市场调研</div>
+      <div>CI 失败排查</div>
+      <div>余额接口对接</div>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="top"><span>重构会话存储</span><span style="opacity:.5">·</span><span>deepseek-v4.1-flash</span></div>
+    <div class="chat">
+      <div class="msg user">
+        <div class="who">你</div>
+        <div class="bubble2">帮我把 session 存储改成按天分片，旧的索引要能兼容。</div>
+      </div>
+      <div class="msg">
+        <div class="who">Agent</div>
+        <div class="bubble2">我先看一下现有的写入路径，确认分片点和索引回退策略，然后给你一个不破坏旧数据的迁移方案。</div>
+      </div>
+    </div>
+    <div class="composer">
+      <div data-testid="agent-input-box" class="inputbox">
+        <span>输入消息…</span>
+        <span class="send">↑</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// —— 立绘路径重写：demo 没有宿主，把 /dsh-gemini-widget/frame.webp 指到本地 assets ——
+(function () {
+  var ROUTE = '/dsh-gemini-widget/frame.webp';
+  var realSrc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+  Object.defineProperty(HTMLImageElement.prototype, 'src', {
+    configurable: true,
+    get: function () { return realSrc.get.call(this); },
+    set: function (v) {
+      var s = String(v);
+      if (s.indexOf(ROUTE) >= 0) {
+        var m = /[?&]name=([a-z]+)/.exec(s);
+        v = '../assets/frames/' + (m ? m[1] : 'idle') + '.webp';
+      }
+      realSrc.set.call(this, v);
+    },
+  });
+})();
+
+// —— 场景：stats / cost / wait / card / settings ——
+var SCENE = (new URLSearchParams(location.search)).get('scene') || 'stats';
+
+var PREFS = {
+  enabled: true, size: 132, opacity: 1, soundEnabled: true, soundSet: 'duck', volume: 0.78,
+  showStatsBar: true, turnCostBubble: true, turnEndSound: true,
+  reviewAlert: true, reviewAlertSound: true,
+  anchor: { h: 'right', v: 'bottom', hd: 18, vd: 16 },
+  customDialogues: []
+};
+
+var STATE = {
+  ok: true, now: Date.now(), isPeak: false, wait: null, prefs: PREFS,
+  session: {
+    id: 'demo', name: '重构会话存储', turn: 7, steps: 19,
+    inputTokens: 18420, cacheReadTokens: 268800, outputTokens: 9640,
+    totalTokens: 296860, contextTokens: 287220, contextWindow: 1000000,
+    cacheHitPct: 93.6, cost: 0.4127,
+    model: 'deepseek-v4.1-flash', provider: 'workbuddy',
+    running: SCENE === 'eat', tokPerSec: 42.7,
+    lastTurnCost: 0.0173, lastTurnTokens: 8213, lastTurnAt: null
+  },
+  balance: { ok: true, totalBalance: 44.72, rechargeBalance: 44.72, bonusBalance: 0, currency: 'CNY', source: 'apikey' }
+};
+
+if (SCENE === 'wait') STATE.wait = { kind: 'approval', session: '重构会话存储' };
+
+window.fetch = function (url) {
+  var u = String(url);
+  var body = u.indexOf('/state') >= 0 ? STATE : { ok: true, prefs: PREFS };
+  return Promise.resolve({ ok: true, json: function () { return Promise.resolve(body) } });
+};
+
+// 场景动作：等挂件挂好后触发对应交互
+window.addEventListener('load', function () {
+  setTimeout(function () {
+    var hit = document.querySelector('#neko-root .neko-hit');
+    if (!hit) return;
+    function click(el) {
+      el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, clientX: 10, clientY: 10 }));
+      el.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: 10, clientY: 10 }));
+    }
+    if (SCENE === 'stats') click(hit);                       // 第一段：额度气泡
+    else if (SCENE === 'dialog') { click(hit); setTimeout(function () { click(hit); }, 260); } // 第二段：台词
+    else if (SCENE === 'card') hit.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: 10, clientY: 10 }));
+    else if (SCENE === 'settings') {
+      hit.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: 10, clientY: 10 }));
+      setTimeout(function () {
+        var b = document.querySelector('#neko-card [data-act="settings"]');
+        if (b) b.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      }, 200);
+    }
+    document.documentElement.setAttribute('data-ready', '1');
+  }, 700);
+});
+</script>
+<!-- 真实挂件脚本 -->
+<script src="../assets/neko-widget.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+# awesome-dsh-plugin 条目
+# 目标文件：data/plugins/Applepinea__dsh-gemini-widget.yml
+# 提交方式：向 awesome-dsh-plugin/awesome-dsh-plugin 提 PR，只加这一个文件
+#
+# 说明：这个文件本身是给维护者看的「待提交草稿」，
+# 真正提 PR 时只把下面 url/name/category/description/icon 这几行写进目标文件。
+
+url: https://github.com/Applepinea/dsh-gemini-widget
+name: Applepinea/dsh-gemini-widget
+category: ui
+description:
+  en: 'A catgirl observer in the lower-right corner of DSH showing context usage, tokens, cache hit rate, balance and per-turn cost, with five expression frames, confirmation alerts and an adjustable settings panel.'
+  zh: 'DSH 右下角的猫娘观察窗，显示上下文占用、Token、缓存命中率、余额与每轮花费，带五帧表情联动、确认提醒与可调设置面板。'
+icon: https://raw.githubusercontent.com/Applepinea/dsh-gemini-widget/main/assets/icon.png

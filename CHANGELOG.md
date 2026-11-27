@@ -2,6 +2,14 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## 未发布
+
+- 新增：市场卡片图标 `assets/icon.png`（256×256 PNG，透明底）
+- 新增：`docs/` 界面截图与可复现的预览页 `docs/demo.html`
+- 新增：上架材料清单 `docs/MARKET.md` 与条目草稿 `docs/market-entry.yml`
+- 新增：`scripts/check.mjs` 校验 `icon` 存在且为位图、`docs` 不进发布包
+- 修复：每轮结束提示音独立开关（此前后与按压音效共用一个开关）
+
 ## 0.1.1
 
 - 修复：上下文百分比恒为 0（窗口容量未从 tokenMeter 传入时未回退到估算）

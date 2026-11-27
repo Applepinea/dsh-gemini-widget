@@ -45,10 +45,20 @@ must(existsSync(join(root, pkg.main ?? '')), 'main 指向的文件存在：' + p
 for (const item of pkg.files ?? []) {
   must(existsSync(join(root, item)), 'files 中的 ' + item + ' 存在')
 }
-// 发布包里不该出现的东西
-const forbidden = ['tests', 'scripts', '.github', 'node_modules', 'dist']
+// 发布包里不该出现的东西（docs 只放商城截图与预览页，是仓库资产不是运行时代码）
+const forbidden = ['tests', 'scripts', 'docs', '.github', 'node_modules', 'dist']
 for (const item of pkg.files ?? []) {
   must(!forbidden.includes(item.replace(/\/+$/, '')), 'files 不含开发资产：' + item)
+}
+
+// 市场卡片图标：必须是存在的位图（市场的 icon 字段只收 png/jpg/webp）
+if (pkg.icon) {
+  const iconPath = join(root, pkg.icon)
+  must(existsSync(iconPath), 'icon 指向的文件存在：' + pkg.icon)
+  if (existsSync(iconPath)) {
+    must(/\.(png|jpe?g|webp)$/i.test(pkg.icon), 'icon 是位图格式（市场的 icon 不收矢量图）')
+    must(statSync(iconPath).size > 2000, 'icon 非空（' + statSync(iconPath).size + 'B）')
+  }
 }
 
 section('资源完整性')

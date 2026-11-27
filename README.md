@@ -1,11 +1,27 @@
-# DSH Gemini Widget · 猫娘观察窗 🐱
+<p align="center">
+  <img src="assets/icon.png" width="112" alt="DSH Gemini Widget">
+</p>
+
+# DSH Gemini Widget · 猫娘观察窗
 
 DeepSeek Harness 界面右下角常驻的 **Gemini 猫娘观察窗**：把上下文占用、Token 消耗、
 缓存命中率、账户余额和每轮花费，用一只会动的猫娘摊在你眼前。
 
 **标准 DSH bundle 插件** —— `dsh plugin` 一键安装，零依赖、无外部服务、不需要任何令牌。
 
-![idle](assets/frames/idle.webp)
+![额度气泡](docs/screenshot-stats.png)
+
+---
+
+## 截图
+
+| | |
+|---|---|
+| ![额度气泡](docs/screenshot-stats.png)<br><sub>左键第一次：上下文 / Token / 缓存命中 / 余额</sub> | ![详情卡](docs/screenshot-card.png)<br><sub>右键：完整遥测详情卡</sub> |
+| ![设置面板](docs/screenshot-settings.png)<br><sub>设置面板：尺寸、透明度、音效、开关、停靠</sub> | ![确认提醒](docs/screenshot-wait.png)<br><sub>有授权待批 / 提问待答时切 <code>wait</code> 差分</sub> |
+
+> 截图取自仓库内的 [`docs/demo.html`](docs/demo.html) —— 它加载**真实的** `assets/neko-widget.js`，
+> 只把宿主接口换成桩数据，所以是实际渲染结果而非效果图。
 
 ---
 
@@ -57,6 +73,12 @@ DeepSeek Harness 界面右下角常驻的 **Gemini 猫娘观察窗**：把上下
 ---
 
 ## 安装
+
+### 插件市场
+
+装了 [dsh-market](https://github.com/dsh-market/dsh-market) 的话，在 **插件 → 插件市场** 里搜
+`dsh-gemini-widget` 直接一键安装。也可以用宿主自带的「索引源」：添加
+`https://cdn.jsdelivr.net/npm/dsh-plugin-catalog/index.json`，然后在 **发现** 里搜。
 
 ### 官方桌面端（Electron）
 
