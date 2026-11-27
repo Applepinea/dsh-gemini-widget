@@ -53,7 +53,7 @@ icon: https://raw.githubusercontent.com/Applepinea/dsh-gemini-widget/main/assets
 | 仓库创建满 **1 天** | ⚠️ **未达标** | 建于 2026-11-27 12:24 UTC，需等到 **11-28 12:24 UTC** |
 | 仓库带 `dsh-plugin` topic | ✅ | 已设置 |
 | 描述属实、不夸大 | ✅ | 未写任何数字或营销词，逐条对应代码 |
-| `icon` 是 GitHub 图床位图 | ✅ | `assets/icon.png`，256×256 PNG（透明底） |
+| `icon` 是 GitHub 图床位图 | ✅ | `assets/icon.png`，255×264 PNG（透明底） |
 
 ---
 
@@ -61,7 +61,7 @@ icon: https://raw.githubusercontent.com/Applepinea/dsh-gemini-widget/main/assets
 
 | 材料 | 位置 | 用途 |
 |---|---|---|
-| 图标 256×256 PNG | `assets/icon.png` | 市场卡片图（YAML 的 `icon` 字段） |
+| 图标 255×264 PNG | `assets/icon.png` | 市场卡片图（YAML 的 `icon` 字段） |
 | 界面截图 ×4 | `docs/screenshot-*.png` | README 展示；市场打开安装弹窗时从 README 自动抽取 |
 | 预览页 | `docs/demo.html` | 截图来源，加载真实 `neko-widget.js`，可随时重拍 |
 | YAML 草稿 | `docs/market-entry.yml` | 提 PR 的内容 |
