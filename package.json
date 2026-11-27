@@ -1,6 +1,6 @@
 {
   "name": "dsh-gemini-widget",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "DSH 界面右下角的 Gemini 猫娘观察窗：上下文占用 / Token / 缓存命中率 / 余额 / 每轮消耗，五帧表情联动、确认提醒、轮末播报、可调尺寸与小黄鸭音效",
   "keywords": [
     "dsh",

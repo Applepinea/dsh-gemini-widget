@@ -269,6 +269,7 @@
       var p = STATE.prefs || {}
       if (p.soundEnabled === false) return
       if (kind === 'alert' && p.reviewAlertSound === false) return
+      if (kind === 'done' && p.turnEndSound === false) return
       var vol = soundVol()
       if (vol <= 0) return
       if (kind === 'alert') {
@@ -705,6 +706,7 @@
     h += '<div class="neko-sect">'
     h += '<label class="neko-chk"><input type="checkbox" data-k="showStatsBar"' + (p.showStatsBar === false ? '' : ' checked') + '>显示输入框下方统计栏</label>'
     h += '<label class="neko-chk"><input type="checkbox" data-k="turnCostBubble"' + (p.turnCostBubble === false ? '' : ' checked') + '>每轮结束播报消耗</label>'
+    h += '<label class="neko-chk"><input type="checkbox" data-k="turnEndSound"' + (p.turnEndSound === false ? '' : ' checked') + '>每轮结束提示音</label>'
     h += '<label class="neko-chk"><input type="checkbox" data-k="reviewAlert"' + (p.reviewAlert === false ? '' : ' checked') + '>确认提醒气泡</label>'
     h += '<label class="neko-chk"><input type="checkbox" data-k="reviewAlertSound"' + (p.reviewAlertSound === false ? '' : ' checked') + '>确认提醒音效</label>'
     h += '</div>'
@@ -820,13 +822,17 @@
         }
         STATE.lastWait = w ? { kind: w.kind, session: w.session } : null
 
-        // 新一轮结束 → 消耗播报
+        // 新一轮结束 → 消耗播报（气泡）与提示音各自独立开关，
+        // 关掉气泡仍可只听声音，反之亦然。
         if (prev && s.session && prev.session &&
             s.session.lastTurnAt && s.session.lastTurnAt !== prev.session.lastTurnAt) {
-          showTurnCost()
-          beep('done')
-          setFrame('grin')
-          setTimeout(function () { setFrame(computeFrame()) }, 900)
+          var tp = STATE.prefs || {}
+          if (tp.turnCostBubble !== false) showTurnCost()
+          if (tp.turnEndSound !== false) beep('done')
+          if (tp.turnCostBubble !== false) {
+            setFrame('grin')
+            setTimeout(function () { setFrame(computeFrame()) }, 900)
+          }
         }
         if (force) { hideBubble() }
       })

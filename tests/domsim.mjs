@@ -78,8 +78,22 @@ export function makeDom() {
     getAttribute(k){ return this._attrs[k] === undefined ? null : this._attrs[k] }
     hasAttribute(k){ return k in this._attrs }
     get textContent(){ return this._text }
-    set textContent(v){ this._text = String(v); this.children = [] }
-    get innerHTML(){ return this._html }
+    set textContent(v){ this._text = String(v); this.children = []; this._html = '' }
+    get innerHTML(){
+      if (this._html) return this._html
+      if (this.children.length) return this.children.map(serialize).join('')
+      return this._text || ''
+    }
+    // 真实 DOM 里游离元素同样能序列化；shim 之前没有 → rows() 返回空串
+    get outerHTML(){
+      if (this.nodeType === 3) return this._text
+      const attrs = Object.keys(this._attrs)
+        .filter(k => this._attrs[k] !== undefined && this._attrs[k] !== '')
+        .map(k => ' ' + k + '="' + String(this._attrs[k]).replace(/"/g, '&quot;') + '"').join('')
+      const cls = this.className ? ' class="' + this.className + '"' : ''
+      const inner = this._html || (this.children.length ? this.children.map(serialize).join('') : (this._text || ''))
+      return '<' + this.tagName.toLowerCase() + attrs + cls + '>' + inner + '</' + this.tagName.toLowerCase() + '>'
+    }
     set innerHTML(v){ this._html = String(v); this.children = []; parseInto(this, this._html) }
     appendChild(c){ c.parentNode = this; this.children.push(c); if (c._attrs && c._attrs.id) byId.set(c._attrs.id, c); return c }
     insertBefore(c, ref){ c.parentNode = this; const i = this.children.indexOf(ref); if(i<0) this.children.push(c); else this.children.splice(i,0,c); return c }
@@ -127,6 +141,13 @@ export function makeDom() {
       walk(this); return out
     }
     querySelector(sel){ return this.querySelectorAll(sel)[0] || null }
+  }
+
+  function serialize(n) {
+    if (!n) return ''
+    if (n.nodeType === 3) return n._text
+    if (n.outerHTML !== undefined && n.children) return n.outerHTML
+    return ''
   }
 
   function parseInto(parent, html) {

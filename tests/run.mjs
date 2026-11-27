@@ -13,7 +13,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
-const FILES = ['selftest.mjs', 'hosttest.mjs', 'uitest.mjs', 'ctxtest.mjs', 'audiotest.mjs', 'balancetest.mjs']
+const FILES = ['selftest.mjs', 'hosttest.mjs', 'uitest.mjs', 'ctxtest.mjs', 'audiotest.mjs', 'turnendtest.mjs', 'balancetest.mjs']
 const TIMEOUT_MS = 30000
 
 const realExit = process.exit.bind(process)
