@@ -77,6 +77,30 @@ section('前端约定')
   must(/export default \{/.test(h), '宿主有 default export')
 }
 
+section('可移植性')
+// 硬编码绝对路径是本项目的**真实事故**：balancetest 里写过
+// 'file:///C:/Users/<me>/.../lib/index.js'，本机跑得通、CI 上直接找不到模块。
+// 这里统一拦截，防止再犯。
+{
+  const offenders = []
+  ;(function walk(dir) {
+    for (const name of readdirSync(dir)) {
+      if (name === 'node_modules' || name === '.git' || name === 'coverage') continue
+      const full = join(dir, name)
+      const st = statSync(full)
+      if (st.isDirectory()) { walk(full); continue }
+      if (!/\.(mjs|js|json|yml|yaml|md)$/.test(name)) continue
+      if (name === 'README.md' || name === 'CHANGELOG.md') continue // 文档里出现路径举例是正常的
+      if (name === 'check.mjs') continue // 本文件自己就写着检测正则，跳过避免自指
+      const src = readFileSync(full, 'utf8')
+      // file:///C:/... · 'C:\...' · /home/xxx/ · /Users/xxx/
+      const re = /file:\/\/[A-Za-z]:|['"`][A-Za-z]:[\\/]|\/(home|Users)\/[A-Za-z0-9._-]+\//
+      if (re.test(src)) offenders.push(full.slice(root.length + 1))
+    }
+  })(root)
+  must(offenders.length === 0, '无硬编码本机绝对路径' + (offenders.length ? '（违反：' + offenders.join(', ') + '）' : ''))
+}
+
 section('语法')
 const files = []
 ;(function walk(dir) {

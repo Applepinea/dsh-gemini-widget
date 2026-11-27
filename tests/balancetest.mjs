@@ -2,6 +2,11 @@
 // 这正是 0.1.1 里"余额永远显示 —"的根因：inject 列表没有 credentials，
 // 直接写 ctx.credentials.resolve() 会抛 TypeError，被 catch 后当成"没有 key"。
 import assert from 'node:assert'
+import { dirname, join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const HERE = dirname(fileURLToPath(import.meta.url))
+const HOST_ENTRY = join(HERE, '..', 'lib', 'index.js')
 
 const routes = {}
 const events = {}
@@ -34,7 +39,7 @@ globalThis.fetch = async (url, opt) => {
   return { ok: false, status: 404, json: async () => ({}) }
 }
 
-const mod = await import('file:///C:/Users/csa/Documents/deepseek-harness/default-workspace/dsh-gemini-widget/lib/index.js')
+const mod = await import(pathToFileURL(HOST_ENTRY).href)
 mod.default.apply(makeCtx((name) => (name === 'credentials' ? fakeCreds : null)))
 
 const res = { writeHead() {}, end(b) { this._b = b } }
