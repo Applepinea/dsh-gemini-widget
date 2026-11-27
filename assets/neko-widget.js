@@ -492,17 +492,37 @@
     return Math.round(Math.min(100, Math.max(0, pct)) * 10) / 10
   }
 
+  /** 还没有任何会话事件时（刚打开页面），返回一个占位说明而不是一排 0。 */
+  function noSessionHint() {
+    return '<div style="opacity:.72;font-size:12px;line-height:1.6">还没有对话数据喵～<br>开始一轮对话后本喵就能记账了。</div>'
+  }
+
   function statsBubbleHtml() {
     var s = STATE.snap || {}
-    var sess = s.session || {}
+    var sess = s.session
     var bal = s.balance || {}
+    if (!sess) {
+      var h0 = noSessionHint()
+      if (bal && bal.ok) h0 += '<div class="neko-b-sep"></div>' + rows([['余额', '¥' + fmtMoney(bal.totalBalance)]])
+      return h0
+    }
     var ctxPct = ctxPctOf(sess)
     var pairs = []
-    pairs.push(['上下文', ctxPct == null ? fmt(sess.contextTokens || 0) : ctxPct + '% · ' + fmt(sess.contextTokens || 0)])
+    var usedCtx = Number(sess.contextTokens) || 0
+    pairs.push(['上下文', ctxPct != null ? ctxPct + '% · ' + fmt(usedCtx)
+      : (usedCtx > 0 ? fmt(usedCtx) : '—')])
     pairs.push(['本轮 Token', fmt(sess.totalTokens || 0)])
     pairs.push(['缓存命中', (sess.cacheHitPct == null ? '—' : sess.cacheHitPct + '%')])
-    if (bal && bal.ok) pairs.push(['余额', '¥' + fmtMoney(bal.totalBalance) + (s.isPeak ? ' · 峰价' : ' · 谷价')])
-    else pairs.push(['余额', '—'])
+    if (bal && bal.ok) {
+      pairs.push(['余额', '¥' + fmtMoney(bal.totalBalance) + (s.isPeak ? ' · 峰价' : ' · 谷价')])
+    } else {
+      // 把失败原因塞进 title，悬停能看到（气泡里放长文会撑爆布局）
+      var why = (bal && bal.code === 'NO_CRED_SVC') ? '无凭据服务'
+        : (bal && bal.code === 'NO_KEY') ? '未配置 key'
+        : (bal && bal.code === 'NONE') ? '网络/凭据均失败'
+        : '不可用'
+      pairs.push(['余额', '— <span style="font-size:10px;opacity:.55">' + why + '</span>'])
+    }
     return rows(pairs)
   }
   function costBubbleHtml() {
@@ -585,7 +605,9 @@
     h += kv('累计 Token', fmt(sess.totalTokens || 0))
     h += kv('缓存命中', sess.cacheHitPct == null ? '—' : sess.cacheHitPct + '%')
     h += kv('本会话花费', '¥' + fmtMoney(sess.cost || 0))
-    h += kv('余额', bal && bal.ok ? '¥' + fmtMoney(bal.totalBalance) + (bal.source === 'account' ? '（账号）' : '（API key）') : '—')
+    h += kv('余额', bal && bal.ok
+      ? '¥' + fmtMoney(bal.totalBalance) + (bal.source === 'account' ? '（账号）' : '（API key）')
+      : '<span style="opacity:.6" title="' + String((bal && bal.error) || '').replace(/"/g, '&quot;') + '">—</span>')
     h += kv('峰谷', s.isPeak ? '高峰时段' : '空闲时段')
     h += '<div class="neko-tools"><button data-act="refresh">刷新</button><button data-act="settings">设置</button><button data-act="close">关闭</button></div>'
     card.innerHTML = h
@@ -622,8 +644,14 @@
   }
   function renderStatsBar(bar) {
     var s = STATE.snap || {}
-    var sess = s.session || {}
+    var sess = s.session
     var bal = s.balance || {}
+    if (!sess) {
+      var b0 = '<span style="opacity:.6">等待对话喵～</span>'
+      if (bal && bal.ok) b0 += '<span class="neko-sep">·</span><span>¥' + fmtMoney(bal.totalBalance) + '</span>'
+      bar.innerHTML = b0
+      return
+    }
     var ctxPct = ctxPctOf(sess)
     var parts = []
     parts.push((sess.turn || 0) + '轮 · ' + (sess.steps || 0) + '步')
