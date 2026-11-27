@@ -1,0 +1,44 @@
+{
+  "name": "dsh-gemini-widget",
+  "version": "0.1.0",
+  "description": "DSH 界面右下角的 Gemini 猫娘观察窗：上下文占用 / Token / 缓存命中率 / 余额 / 每轮消耗，五帧表情联动、确认提醒、轮末播报、可调尺寸与小黄鸭音效",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "widget",
+    "telemetry",
+    "gemini",
+    "neko",
+    "context",
+    "token"
+  ],
+  "type": "module",
+  "main": "lib/index.js",
+  "files": [
+    "lib",
+    "assets",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "NOTICE.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Applepinea/dsh-gemini-widget.git"
+  },
+  "homepage": "https://github.com/Applepinea/dsh-gemini-widget#readme",
+  "bugs": {
+    "url": "https://github.com/Applepinea/dsh-gemini-widget/issues"
+  },
+  "author": "Applepinea",
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=18"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

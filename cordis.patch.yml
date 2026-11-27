@@ -1,0 +1,14 @@
+# ============================================================================
+# dsh-gemini-widget —— DSH bundle patch
+# ============================================================================
+# 把猫娘观察窗插入当前 profile 的配置树。
+#
+# 本地开发安装：
+#   dsh plugin --profile <name> add link:<本目录绝对路径>
+# 从 GitHub 安装：
+#   dsh plugin --profile <name> add github:Applepinea/dsh-gemini-widget
+# ============================================================================
+
+- insert:
+    - id: dsh-gemini-widget
+      name: dsh-gemini-widget
