@@ -112,20 +112,71 @@
 
   // ── 音效引擎 ────────────────────────────────────────────────────────
   // 两套预设，全部 WebAudio 现场合成，零音频资源：
-  //   duck「小黄鸭」：按压"嘎"（下滑锯齿）+ 松开"啾"（上滑正弦），双段式
-  //   bell「叮咚」  ：按压叮 + 松开咚（原默认）
-  // 双段式的关键是"按压音立刻起播、松开音不等待" —— 手感才跟手。
+  //   duck「小黄鸭」：按压"嘎"（下滑方波）+ 松开"啾"（上滑正弦），双段式
+  //   bell「叮咚」  ：按压叮 + 松开咚
+  //
+  // ⚠️ 关键坑（这就是"音频有时放不出来"的根因）：
+  //   浏览器的 autoplay policy 要求 AudioContext 必须在**用户手势的同一个调用栈里**创建/恢复。
+  //   旧实现在"轮询回调"里才第一次 new AudioContext（回合结束音、确认提醒），
+  //   那是异步上下文，没有用户激活 → 创建出来就是 suspended，resume() 也是异步的，
+  //   于是音被排进了 suspended 的时钟里，永远不响。
+  //   修法：① 在 document 的首次 pointerdown/keydown 里同步预热（unlock）；
+  //        ② 每次发声前检查 state，suspended 就先 resume 再排期（不等它完成）；
+  //        ③ 全程 try/catch，音频挂了绝不影响挂件本身。
   var audioCtx = null
-  var activeNodes = []
+  var audioUnlocked = false
+  var soundDiag = { lastError: '', failures: 0 }
+
+  function audioCtor() {
+    return window.AudioContext || window.webkitAudioContext || null
+  }
+
+  /** 在用户手势里同步创建并解锁上下文。返回是否可用。 */
+  function unlockAudio() {
+    try {
+      var Ctor = audioCtor()
+      if (!Ctor) return false
+      if (!audioCtx) audioCtx = new Ctor()
+      if (audioCtx.state === 'suspended' && typeof audioCtx.resume === 'function') {
+        var p = audioCtx.resume()
+        if (p && typeof p.catch === 'function') p.catch(function () {})
+      }
+      // 播一个 0 增益的极短音：某些浏览器要真的排过声音才会把状态推到 running
+      try {
+        var o = audioCtx.createOscillator()
+        var g = audioCtx.createGain()
+        g.gain.value = 0
+        o.connect(g); g.connect(audioCtx.destination)
+        o.start(); o.stop(audioCtx.currentTime + 0.001)
+      } catch (e) {}
+      audioUnlocked = audioCtx.state === 'running'
+      return true
+    } catch (err) {
+      soundDiag.lastError = String((err && err.message) || err).slice(0, 120)
+      soundDiag.failures++
+      return false
+    }
+  }
 
   function ac() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-    if (audioCtx.state === 'suspended') { try { audioCtx.resume() } catch (e) {} }
+    if (!audioCtx) {
+      var Ctor = audioCtor()
+      if (!Ctor) throw new Error('no AudioContext')
+      audioCtx = new Ctor()
+    }
+    // 每次发声都尝试拉起（不 await：手势外的恢复可能失败，但排期照样进行）
+    if (audioCtx.state === 'suspended') {
+      try {
+        var p = audioCtx.resume()
+        if (p && typeof p.catch === 'function') p.catch(function () {})
+      } catch (e) {}
+    }
     return audioCtx
   }
 
   function tone(opt) {
     var c = ac()
+    if (!c || c.state === 'closed') return null
     var now = c.currentTime
     var t0 = now + (opt.at || 0)
     var o = c.createOscillator()
@@ -142,6 +193,19 @@
     o.connect(g); g.connect(c.destination)
     o.start(t0); o.stop(t0 + opt.dur + 0.03)
     return { osc: o, at: t0 }
+  }
+
+  /** 包一层：记录失败原因，避免"没声音但毫无线索"。 */
+  function safePlay(fn) {
+    try {
+      var r = fn()
+      soundDiag.lastError = ''
+      return r
+    } catch (err) {
+      soundDiag.lastError = String((err && err.message) || err).slice(0, 120)
+      soundDiag.failures++
+      return null
+    }
   }
 
   // 「小黄鸭」按压：短促下滑 + 一点噪声感的方波，像捏了一下
@@ -189,14 +253,14 @@
     var vol = soundVol()
     if (vol <= 0) return
     var set = SOUND_SETS[(STATE.prefs || {}).soundSet] || SOUND_SETS.duck
-    try { set.press(vol) } catch (e) {}
+    safePlay(function () { return set.press(vol) })
   }
   /** 松开（双段式第 2 段） */
   function releaseSound() {
     var vol = soundVol()
     if (vol <= 0) return
     var set = SOUND_SETS[(STATE.prefs || {}).soundSet] || SOUND_SETS.duck
-    try { set.release(vol) } catch (e) {}
+    safePlay(function () { return set.release(vol) })
   }
 
   /** 一次性提示音（提醒 / 回合结束），与按压音效解耦 */
@@ -217,13 +281,23 @@
     } catch (e) { /* 音效失败绝不影响挂件 */ }
   }
 
-  /** 试听（设置面板里用）：完整走一遍按压+松开 */
+  /** 试听（设置面板里用）：完整走一遍按压+松开。点击本身就是手势，顺带解锁上下文。 */
   function previewSound(setKey) {
+    unlockAudio()
     var vol = soundVol()
     if (vol <= 0) vol = 0.78
     var set = SOUND_SETS[setKey] || SOUND_SETS.duck
-    try { set.press(vol) } catch (e) {}
-    setTimeout(function () { try { set.release(vol) } catch (e) {} }, 90)
+    safePlay(function () { return set.press(vol) })
+    setTimeout(function () { safePlay(function () { return set.release(vol) }) }, 90)
+  }
+
+  /** 音频状态摘要，给设置面板显示（"没声音"时能自己看出来是哪一步的问题）。 */
+  function audioStatusText() {
+    if (!audioCtor()) return '浏览器不支持 Web Audio'
+    if (!audioCtx) return '尚未激活（点一下页面即可）'
+    if (audioCtx.state === 'running') return '正常'
+    if (audioCtx.state === 'suspended') return '被浏览器挂起（点一下页面）'
+    return String(audioCtx.state)
   }
 
   // ── 构建 DOM ──
@@ -409,11 +483,20 @@
     }).join('')
   }
 
+  /** 上下文占比：窗口未知时返回 null，绝不显示成 0% */
+  function ctxPctOf(sess) {
+    var win = Number(sess && sess.contextWindow)
+    var used = Number(sess && sess.contextTokens)
+    if (!isFinite(win) || win <= 0 || !isFinite(used) || used <= 0) return null
+    var pct = (used / win) * 100
+    return Math.round(Math.min(100, Math.max(0, pct)) * 10) / 10
+  }
+
   function statsBubbleHtml() {
     var s = STATE.snap || {}
     var sess = s.session || {}
     var bal = s.balance || {}
-    var ctxPct = sess.contextWindow ? Math.round((sess.contextTokens / sess.contextWindow) * 1000) / 10 : null
+    var ctxPct = ctxPctOf(sess)
     var pairs = []
     pairs.push(['上下文', ctxPct == null ? fmt(sess.contextTokens || 0) : ctxPct + '% · ' + fmt(sess.contextTokens || 0)])
     pairs.push(['本轮 Token', fmt(sess.totalTokens || 0)])
@@ -451,7 +534,8 @@
     var s = STATE.snap || {}
     var sess = s.session || {}
     var bal = s.balance || {}
-    var ctxPct = sess.contextWindow ? Math.round((sess.contextTokens / sess.contextWindow) * 100) : 0
+    var cp = ctxPctOf(sess)
+    var ctxPct = cp == null ? 0 : Math.round(cp)
     var line = list[Math.floor(Math.random() * list.length)]
     return line
       .replace('{ctx}', String(ctxPct))
@@ -488,14 +572,16 @@
     var s = STATE.snap || {}
     var sess = s.session || {}
     var bal = s.balance || {}
-    var ctxPct = sess.contextWindow ? Math.round((sess.contextTokens / sess.contextWindow) * 1000) / 10 : null
+    var ctxPct = ctxPctOf(sess)
     var h = '<h4>猫娘观察台</h4>'
     function kv(k, v) { return '<div class="neko-kv"><span>' + k + '</span><span>' + v + '</span></div>' }
     h += kv('会话', sess.name ? String(sess.name).slice(0, 16) : '—')
     h += kv('模型', sess.model || '—')
     h += kv('轮次 / 步数', (sess.turn || 0) + ' / ' + (sess.steps || 0))
-    h += kv('上下文', (ctxPct == null ? fmt(sess.contextTokens || 0) : ctxPct + '%') +
-      (sess.contextWindow ? ' (' + fmt(sess.contextTokens || 0) + '/' + fmt(sess.contextWindow) + ')' : ''))
+    var winN = Number(sess.contextWindow) || 0
+    h += kv('上下文', ctxPct == null
+      ? fmt(sess.contextTokens || 0) + (winN > 0 ? ' / ' + fmt(winN) : '')
+      : ctxPct + '% (' + fmt(sess.contextTokens || 0) + '/' + fmt(winN) + ')')
     h += kv('累计 Token', fmt(sess.totalTokens || 0))
     h += kv('缓存命中', sess.cacheHitPct == null ? '—' : sess.cacheHitPct + '%')
     h += kv('本会话花费', '¥' + fmtMoney(sess.cost || 0))
@@ -538,13 +624,14 @@
     var s = STATE.snap || {}
     var sess = s.session || {}
     var bal = s.balance || {}
-    var ctxPct = sess.contextWindow ? Math.round((sess.contextTokens / sess.contextWindow) * 1000) / 10 : null
+    var ctxPct = ctxPctOf(sess)
     var parts = []
     parts.push((sess.turn || 0) + '轮 · ' + (sess.steps || 0) + '步')
     if (sess.tokPerSec > 0) parts.push(sess.tokPerSec + ' tok/s')
     parts.push(fmt(sess.totalTokens || 0) + ' tok')
     if (sess.cacheHitPct != null) parts.push('缓存 ' + sess.cacheHitPct + '%')
     if (ctxPct != null) parts.push('上下文 ' + ctxPct + '%')
+    else if (Number(sess.contextTokens) > 0) parts.push('上下文 ' + fmt(sess.contextTokens))
     if (bal && bal.ok) parts.push('¥' + fmtMoney(bal.totalBalance))
     bar.innerHTML = parts.map(function (x, i) {
       return (i ? '<span class="neko-sep">·</span>' : '') + '<span>' + x + '</span>'
@@ -584,6 +671,7 @@
     h += '<div class="neko-lab"><span>🔉 音量</span><span data-out="volume">' + Math.round(vol * 100) + '%</span></div>'
     h += '<div class="neko-row"><input type="range" data-k="volume" min="0" max="100" step="1" value="' + Math.round(vol * 100) + '"></div>'
     h += '<label class="neko-chk"><input type="checkbox" data-k="soundEnabled"' + (p.soundEnabled === false ? '' : ' checked') + '>启用按压音效</label>'
+    h += '<div class="neko-lab"><span>音频状态</span><span data-out="audio">' + audioStatusText() + '</span></div>'
     h += '</div>'
 
     h += '<div class="neko-sect">'
@@ -662,7 +750,11 @@
       })
     })
     var pv = box.querySelector('[data-act="preview"]')
-    if (pv) pv.addEventListener('click', function () { previewSound((STATE.prefs || {}).soundSet || 'duck') })
+    if (pv) pv.addEventListener('click', function () {
+      previewSound((STATE.prefs || {}).soundSet || 'duck')
+      var out = box.querySelector('[data-out="audio"]')
+      if (out) setTimeout(function () { out.textContent = audioStatusText() }, 120)
+    })
     var cl = box.querySelector('[data-act="close"]')
     if (cl) cl.addEventListener('click', function () { box.style.display = 'none' })
   }
@@ -727,6 +819,12 @@
     if (!document.body) { if (tries++ < 100) return setTimeout(boot, 100); return }
     if (!build()) return
     bindDrag()
+
+    // 在**用户手势**里同步解锁音频（自动播放策略要求）。
+    // 用 capture + once 语义：第一次交互时解锁，之后持续监听以应对被系统重新挂起。
+    ;['pointerdown', 'keydown', 'touchstart'].forEach(function (t) {
+      window.addEventListener(t, function () { unlockAudio() }, { capture: true, passive: true })
+    })
     fetch(ROUTE + '/prefs', { cache: 'no-store' })
       .then(function (r) { return r.json() })
       .then(function (j) { if (j && j.ok && j.prefs) { STATE.prefs = j.prefs; applyAnchor(); applyVisibility(); mountStatsBar() } })

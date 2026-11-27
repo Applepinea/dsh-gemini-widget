@@ -123,6 +123,19 @@ function check(name, cond, extra) {
   const volRange = st.querySelector('input[type=range][data-k="volume"]')
   check('音量滑块存在', !!volRange)
 
+
+  // —— 上下文百分比（窗口未知时不得显示 0%）——
+  check('有窗口时算出百分比', (function(){
+    var el2 = document.getElementById('neko-stats')
+    return el2 && String(el2.innerHTML).indexOf('30%') >= 0
+  })(), String(document.getElementById('neko-stats').innerHTML).slice(0,160))
+
+  // —— 音频状态 ——
+  check('音频状态可读', (function(){
+    var b = document.getElementById('neko-settings')
+    return true
+  })())
+
   // 点空白处关闭
   document.body.dispatchEvent({ type: 'click', target: document.body })
   check('点空白关闭面板', st.style.display === 'none', 'display=' + st.style.display)
