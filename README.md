@@ -4,8 +4,9 @@
 
 # DSH Gemini Widget · 猫娘观察窗
 
-DeepSeek Harness 界面右下角常驻的 **Gemini 猫娘观察窗**：把上下文占用、Token 消耗、
-缓存命中率、账户余额和每轮花费，用一只会动的猫娘摊在你眼前。
+DeepSeek Harness 界面里的一只 **Gemini 猫娘**——表情随会话状态切换（待机、思考、
+等你确认、回合结束），把上下文占用、Token、缓存命中率、账户余额和每轮花费
+实时摊在你眼前。
 
 **标准 DSH bundle 插件** —— `dsh plugin` 一键安装，零依赖、无外部服务、不需要任何令牌。
 
