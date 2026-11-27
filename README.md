@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon.png" width="112" alt="DSH Gemini Widget">
+  <img src="assets/icon.png?v=2" width="112" alt="DSH Gemini Widget">
 </p>
 
 # DSH Gemini Widget · Gemini娘
