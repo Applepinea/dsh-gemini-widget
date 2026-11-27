@@ -2,9 +2,9 @@
   <img src="assets/icon.png" width="112" alt="DSH Gemini Widget">
 </p>
 
-# DSH Gemini Widget · 猫娘观察窗
+# DSH Gemini Widget · Gemini娘
 
-DeepSeek Harness 界面里的一只 **Gemini 猫娘**——表情随会话状态切换（待机、思考、
+DeepSeek Harness 界面里的一只 **Gemini娘**——表情随会话状态切换（待机、思考、
 等你确认、回合结束），把上下文占用、Token、缓存命中率、账户余额和每轮花费
 实时摊在你眼前。
 
@@ -45,7 +45,7 @@ DeepSeek Harness 界面里的一只 **Gemini 猫娘**——表情随会话状态
 ### 三段式左键气泡
 
 1. **第一次点** → 额度气泡：上下文占用 / 本轮 Token / 缓存命中 / 余额 / 峰谷
-2. **第二次点气泡** → 换一句猫娘台词（内置 + 自定义，支持 `{ctx}` `{tokens}` `{cache}` `{balance}` 占位符）
+2. **第二次点气泡** → 换一句 Gemini娘台词（内置 + 自定义，支持 `{ctx}` `{tokens}` `{cache}` `{balance}` 占位符）
 3. **第三次点** → 收起
 
 ### 每轮结束自动播报
@@ -75,6 +75,27 @@ DeepSeek Harness 界面里的一只 **Gemini 猫娘**——表情随会话状态
 
 ## 安装
 
+> 以下命令适用于 `dsh web` 与自定义 profile——命令里的 `web` 换成你的 profile 名即可。
+> **官方桌面端**读 `desktop` profile、由应用自带的插件管理器接管，见下方专门一节。
+
+### 从 npm 安装
+
+```bash
+dsh plugin --profile web add dsh-gemini-widget
+```
+
+### 从 GitHub 安装
+
+```bash
+dsh plugin --profile web add github:Applepinea/dsh-gemini-widget
+```
+
+或用 [Releases](https://github.com/Applepinea/dsh-gemini-widget/releases) 里的预构建包（免克隆源码）：
+
+```bash
+dsh plugin --profile web add https://github.com/Applepinea/dsh-gemini-widget/releases/download/v<版本>/dsh-gemini-widget-<版本>.tgz
+```
+
 ### 插件市场
 
 装了 [dsh-market](https://github.com/dsh-market/dsh-market) 的话，在 **插件 → 插件市场** 里搜
@@ -89,13 +110,9 @@ DeepSeek Harness 界面里的一只 **Gemini 猫娘**——表情随会话状态
 
 装完**完全退出客户端（含系统托盘）再打开** —— 桌面端的注入表是宿主启动时一次性收集的。
 
-### dsh web
+### 本地开发
 
-```bash
-dsh plugin --profile web add github:Applepinea/dsh-gemini-widget
-```
-
-或本地开发（软链，改完即时生效）：
+软链安装，源码改动即时生效（改前端刷新页面即可，改宿主半需重启 DSH）：
 
 ```bash
 dsh plugin --profile web add link:<本目录绝对路径>
@@ -208,5 +225,5 @@ dsh-gemini-widget/
 
 代码以 **GNU AGPL-3.0-or-later** 发布，见 [LICENSE](./LICENSE)。
 
-猫娘立绘素材来自 [antigravity-observer](https://github.com/yunjuanyunshu114-byte/antigravity-observer)（MIT），
+Gemini娘立绘素材来自 [antigravity-observer](https://github.com/yunjuanyunshu114-byte/antigravity-observer)（MIT），
 **保留原授权**，详见 [NOTICE.md](./NOTICE.md)。

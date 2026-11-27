@@ -4,7 +4,7 @@
 
 ## 美术素材单独授权
 
-`assets/frames/` 下的五帧猫娘差分图片（`idle.webp` / `eat.webp` / `xd.webp` /
+`assets/frames/` 下的五帧 Gemini娘差分图片（`idle.webp` / `eat.webp` / `xd.webp` /
 `grin.webp` / `wait.webp`）来自开源项目
 **[yunjuanyunshu114-byte/antigravity-observer](https://github.com/yunjuanyunshu114-byte/antigravity-observer)**，
 该项目以 **MIT License** 发布。
@@ -23,5 +23,5 @@
 
 ## 头像 / 角色
 
-猫娘形象为上述上游项目的立绘，设定来源于 Google Gemini 的社区二创文化，
+Gemini娘形象为上述上游项目的立绘，设定来源于 Google Gemini 的社区二创文化，
 本项目不对角色形象主张任何独占权利。

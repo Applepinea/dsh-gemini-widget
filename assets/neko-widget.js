@@ -594,7 +594,7 @@
     var sess = s.session || {}
     var bal = s.balance || {}
     var ctxPct = ctxPctOf(sess)
-    var h = '<h4>猫娘观察台</h4>'
+    var h = '<h4>Gemini娘详情</h4>'
     function kv(k, v) { return '<div class="neko-kv"><span>' + k + '</span><span>' + v + '</span></div>' }
     h += kv('会话', sess.name ? String(sess.name).slice(0, 16) : '—')
     h += kv('模型', sess.model || '—')
@@ -680,7 +680,7 @@
     var vol = Number(p.volume)
     if (!isFinite(vol)) vol = 0.78
 
-    var h = '<h4>⚙️ 猫娘观察台设置</h4>'
+    var h = '<h4>⚙️ Gemini娘设置</h4>'
 
     h += '<div class="neko-sect">'
     h += '<div class="neko-lab"><span>📏 挂件大小</span><span data-out="size">' + size + 'px</span></div>'
