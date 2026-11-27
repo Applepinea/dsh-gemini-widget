@@ -1,8 +1,8 @@
 /* dsh-gemini-widget —— 客户端半（纯 DOM，无 React、无 require） */
 (function () {
   'use strict'
-  if (window.__DSH_NEKO_OBSERVER__) return
-  window.__DSH_NEKO_OBSERVER__ = true
+  if (window.__DSH_GEMINI_WIDGET__) return
+  window.__DSH_GEMINI_WIDGET__ = true
 
   var ROUTE = '/dsh-gemini-widget'
   var IDS = { style: 'neko-style', root: 'neko-root', stats: 'neko-stats', bubble: 'neko-bubble', card: 'neko-card', settings: 'neko-settings' }

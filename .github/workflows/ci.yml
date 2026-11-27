@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      # 本插件零运行时依赖，不需要 npm install。
+
+      # 清单字段、插件声明、文件完整性、资源、前端约定、语法。
+      # 逻辑都在 scripts/check.mjs 里，不在这里重复一份。
+      - name: Check
+        run: npm run check
+
+      # 单元 + UI 冒烟：用极简 DOM 模拟层跑通挂件启动与交互，不需要 DSH 宿主。
+      - name: Test
+        run: npm test
+
+  pack:
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # 确认发布包只含运行时需要的文件，且体积没有异常膨胀。
+      - name: Pack
+        run: npm pack --dry-run
+
+      - name: Inspect tarball
+        run: |
+          npm pack
+          tar -tzf dsh-gemini-widget-*.tgz | sort
+          SIZE=$(stat -c%s dsh-gemini-widget-*.tgz)
+          echo "tarball size: $SIZE bytes"
+          if [ "$SIZE" -gt 1048576 ]; then
+            echo "::error::tarball 超过 1 MiB，检查是否误打包了开发文件"
+            exit 1
+          fi

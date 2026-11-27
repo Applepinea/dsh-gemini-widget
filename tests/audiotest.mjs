@@ -1,8 +1,11 @@
 import fs from 'node:fs'
 import vm from 'node:vm'
 import { makeDom } from './domsim.mjs'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 
-const code = fs.readFileSync('./assets/neko-widget.js', 'utf8')
+const code = fs.readFileSync(join(ROOT, 'assets/neko-widget.js'), 'utf8')
 let fails = 0
 function check(n, c, e) { if (c) console.log('  ok   ' + n); else { fails++; console.log('  FAIL ' + n + (e ? ' → ' + e : '')) } }
 

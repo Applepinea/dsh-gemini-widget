@@ -150,12 +150,34 @@ dsh plugin --profile web add link:<本目录绝对路径>
 ## 开发
 
 ```bash
-node selftest.mjs   # 14 项定价逻辑自测（峰谷判定 / 计价 / reasoning 不重复）
-node uitest.mjs     # 25 项 UI 冒烟测试（用极简 DOM 模拟层跑通启动与交互）
+npm run check    # 发布前自检：清单 / 插件声明 / 文件 / 资源 / 前端约定 / 语法
+npm test         # 单元 + UI 冒烟（极简 DOM 模拟层，不需要 DSH 宿主）
+npm run release  # 一条命令发版：自检 → 测试 → 升版本 → 打包到 dist/
+```
+
+目录：
+
+```text
+dsh-gemini-widget/
+├─ lib/index.js           宿主半：路由、遥测采集、余额、注入行
+├─ assets/
+│  ├─ neko-widget.js      客户端半：纯 DOM，无 React、无 require
+│  └─ frames/*.webp       五帧立绘
+├─ scripts/check.mjs      发布前自检
+├─ scripts/release.mjs    发版脚本
+├─ tests/                 测试（selftest / hosttest / uitest / ctxtest / audiotest）
+└─ .github/workflows/     CI
 ```
 
 - 改 **`assets/neko-widget.js`**（前端）→ 浏览器 `Ctrl+F5` 即可
 - 改 **`lib/index.js`**（宿主）→ 需重启 DSH
+
+### 为什么测试不用 `node --test`
+
+`node --test` 会为每个测试文件 spawn 子进程；在任何禁止 spawn 的环境里
+（受限 CI、沙箱）会直接 EPERM，测试还没跑就红了。这里用同进程顺序执行，
+并且 `scripts/check.mjs` 的语法检查走 `vm.compileFunction` 而不是 `node --check`，
+同样是为了不依赖子进程。
 
 ---
 

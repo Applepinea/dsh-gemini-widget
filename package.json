@@ -21,7 +21,9 @@
     "cordis.patch.yml",
     "README.md",
     "LICENSE",
-    "NOTICE.md"
+    "NOTICE.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md"
   ],
   "repository": {
     "type": "git",
@@ -40,5 +42,15 @@
     "bundle": {
       "patch": "./cordis.patch.yml"
     }
+  },
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "test": "node tests/run.mjs",
+    "release": "node scripts/release.mjs",
+    "pack:tgz": "npm pack"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

@@ -1,4 +1,7 @@
 import assert from 'node:assert'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 // 从 host 半抽出纯函数做黑盒测试（复制同一份逻辑，保证与实现一致）
 const PEAK_HOURS = [[9, 12], [14, 18]]

@@ -1,5 +1,8 @@
 import fs from 'node:fs'
 import assert from 'node:assert'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 // 复制 host 半的事件处理核心做黑盒验证（与实现同源逻辑）
 const sessions = new Map()
